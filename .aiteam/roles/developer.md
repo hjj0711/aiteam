@@ -35,6 +35,17 @@ Bound the loop so it cannot spin or burn budget:
 - Only change a test when the requirement itself changed; record that justification in `tasks/current.md`.
 - Never hard-code expected outputs or skip assertions to get a green run.
 
+## Skills
+
+Claude Code auto-discovers every skill under `.claude/skills/`. The list below is this role's intended skill set — the skills a Developer should prefer. Edit this list to change what this agent uses.
+
+- **capacitor** — Capacitor cross-platform (iOS / Android / web) app and plugin development: CLI, plugins, framework integration, storage, security, testing, upgrading, and Capawesome Cloud. Use for any Capacitor work.
+- **react-dev** — React 18/19 development: component architecture, hooks, Server/Client Components, data fetching, forms, state management, performance, accessibility, and testing. Use when writing, reviewing, or refactoring React/Next.js code.
+- **nodejs-backend-patterns** — Production Node.js backends with Express/Fastify: middleware, error handling, auth, database integration, and API design. Use for Node.js servers, REST/GraphQL APIs, or microservices.
+- **mongodb** — MongoDB operations: queries, aggregation pipelines, indexes, and schema design. Use for any MongoDB data-layer work.
+
+To assign a skill to this role: put the skill folder in `.claude/skills/<name>/`, then add a bullet here. Full architecture and the four ways to add skills: `docs/skills.md`.
+
 ## Artifact
 
 Code, tests, and an updated entry in `tasks/current.md`. Summarize the verification commands run and their results. Prefer a Conventional Commits message (`feat`/`fix`/`refactor`/...) that explains why, not just what.

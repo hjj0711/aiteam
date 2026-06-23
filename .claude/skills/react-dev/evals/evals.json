@@ -1,0 +1,50 @@
+{
+  "skill_name": "react-dev",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to build a UserList component for our dashboard. It should fetch users from /api/users, handle loading state (show skeleton cards), empty state (show 'No users found' with an illustration placeholder), and error state (show error message with a retry button). Each user card shows avatar, name, email, and role. Use TypeScript, and keep the data fetching logic separate from the presentation. The component should also handle the case where the API returns an empty array differently from no results after a search filter. Please write the full implementation.",
+      "expected_output": "A UserList component with a custom hook for data fetching, explicit TypeScript props interfaces, handling of loading/empty/error/success states with distinct UI for each, separation of data fetching from presentation.",
+      "files": [],
+      "expectations": [
+        "Uses a custom hook separate from the component for data fetching",
+        "Has explicit TypeScript props interface",
+        "Handles loading state with skeleton/spinner",
+        "Handles empty state with meaningful message",
+        "Handles error state with retry button",
+        "Does NOT use useEffect + fetch for data fetching (uses proper data fetching pattern)",
+        "Derives values during render, not in useEffect"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this React component for performance issues and anti-patterns. Please identify all problems and rewrite it properly:\n\n```tsx\nimport { useEffect, useState } from 'react';\nimport { Button, Card, Modal } from '@/components';\n\nfunction UserDashboard() {\n  const [users, setUsers] = useState([]);\n  const [loading, setLoading] = useState(true);\n  const [fullName, setFullName] = useState('');\n  const [searchQuery, setSearchQuery] = useState('');\n  \n  useEffect(() => {\n    fetch('/api/users')\n      .then(r => r.json())\n      .then(data => {\n        setUsers(data);\n        setLoading(false);\n      });\n  }, []);\n  \n  useEffect(() => {\n    setFullName(`${user.first} ${user.last}`);\n  }, [user]);\n  \n  const filteredUsers = users.filter(u => \n    u.name.toLowerCase().includes(searchQuery.toLowerCase())\n  );\n  \n  const handleSearch = (e) => {\n    setSearchQuery(e.target.value);\n  };\n  \n  const UserRow = ({ user }) => (\n    <div key={user.id}>\n      <span>{user.name}</span>\n    </div>\n  );\n  \n  return (\n    <div>\n      <input onChange={handleSearch} />\n      {loading && <p>Loading...</p>}\n      {filteredUsers.map(u => <UserRow user={u} />)}\n    </div>\n  );\n}\n```",
+      "expected_output": "Identifies issues: useEffect+fetch for data, derived state in useEffect, barrel imports, component defined inside component, index as key, no error handling, missing empty state, no TypeScript types, inline arrow function in onChange. Rewrites with proper patterns.",
+      "files": [],
+      "expectations": [
+        "Identifies useEffect for data fetching as an anti-pattern",
+        "Identifies derived state in useEffect (fullName) as incorrect",
+        "Identifies component defined inside component (UserRow)",
+        "Identifies barrel import issue from @/components",
+        "Identifies missing loading/error/empty state handling",
+        "Provides rewritten component with proper patterns",
+        "Uses TypeScript types in the rewrite"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm building a Next.js 14+ App Router page that shows a product catalog. The page needs to: 1) Fetch product categories from the database (server-side), 2) Show a client-side filter bar where users can filter by category and price range, 3) Display products in a grid with loading skeletons while filtering. The filter state should be in the URL so it's shareable. Please implement this correctly with Server/Client Component boundaries, proper data fetching, and URL-based filter state. Use TypeScript.",
+      "expected_output": "A split Server/Client Component architecture: Server Component fetches categories, Client Component for filters with URL search params. Proper use of Suspense boundaries, TypeScript interfaces, and URL-based state management for shareable filters.",
+      "files": [],
+      "expectations": [
+        "Correctly separates Server and Client Components with 'use client' directive",
+        "Server Component fetches data server-side (no client-side fetch for initial data)",
+        "Client Component uses URL search params for filter state",
+        "Proper Suspense boundaries placed close to data",
+        "TypeScript interfaces defined for all props and data types",
+        "Handles loading state during client-side filter transitions",
+        "No barrel imports used"
+      ]
+    }
+  ]
+}

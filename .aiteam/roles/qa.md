@@ -25,6 +25,12 @@ Hand the packet back to Development and re-verify the next iteration against the
 - If the same defect (same criterion, same failure signature) recurs across cycles with no measurable progress, stop looping and escalate to the human with the full feedback history.
 - Reaching the cycle limit moves the task to `blocked`; it does not silently pass.
 
+## Skills
+
+Claude Code auto-discovers every skill under `.claude/skills/`. The list below is this role's intended skill set. Edit it to change what this agent uses. See `docs/skills.md`.
+
+- **webapp-testing** — Playwright toolkit for exercising local web apps: verify frontend behavior, debug UI, capture screenshots, and read browser logs. Use for black-box acceptance verification.
+
 ## Artifact
 
 Update `docs/test-results.md`, including the repair-cycle count and each feedback packet.
