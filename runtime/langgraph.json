@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "aiteam": "aiteam_runtime.graph:graph"
+  },
+  "env": ".env"
+}

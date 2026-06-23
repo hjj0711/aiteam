@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的待办</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 40px 16px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: #333;
+  }
+  .input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .input-group input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-group input:focus {
+    border-color: #4f7cff;
+  }
+  .input-group button {
+    padding: 10px 20px;
+    background: #4f7cff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .input-group button:hover { background: #3b66e0; }
+  .input-group button:active { background: #2f54c4; }
+
+  .status {
+    text-align: center;
+    color: #999;
+    padding: 32px 0;
+    font-size: 14px;
+  }
+  .status.error { color: #e74c3c; }
+
+  .todo-list { list-style: none; }
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .todo-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #4f7cff;
+    flex-shrink: 0;
+  }
+  .todo-item .text {
+    flex: 1;
+    font-size: 15px;
+    word-break: break-all;
+  }
+  .todo-item.done .text {
+    text-decoration: line-through;
+    color: #aaa;
+  }
+  .todo-item .delete-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: color 0.2s, background 0.2s;
+  }
+  .todo-item .delete-btn:hover {
+    color: #e74c3c;
+    background: #fff0f0;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e74c3c;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>我的待办</h1>
+
+  <form class="input-group" id="todo-form">
+    <input type="text" id="todo-input" placeholder="输入新的待办..." autofocus maxlength="200">
+    <button type="submit">添加</button>
+  </form>
+
+  <div id="status" class="status">加载中...</div>
+  <ul class="todo-list" id="todo-list"></ul>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const form = document.getElementById('todo-form');
+const input = document.getElementById('todo-input');
+const list = document.getElementById('todo-list');
+const status = document.getElementById('status');
+const toast = document.getElementById('toast');
+
+let toastTimer = null;
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+async function fetchTodos() {
+  status.className = 'status';
+  status.textContent = '加载中...';
+  try {
+    const res = await fetch('/api/todos');
+    if (!res.ok) throw new Error('Failed');
+    const todos = await res.json();
+    render(todos);
+  } catch {
+    status.className = 'status error';
+    status.textContent = '加载失败，请刷新重试';
+  }
+}
+
+function render(todos) {
+  list.innerHTML = '';
+  if (todos.length === 0) {
+    status.className = 'status';
+    status.textContent = '暂无待办事项';
+    return;
+  }
+  status.textContent = '';
+  todos.forEach(todo => {
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (todo.done ? ' done' : '');
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = todo.done;
+    cb.addEventListener('change', () => toggleTodo(todo.id, cb.checked, li));
+
+    const span = document.createElement('span');
+    span.className = 'text';
+    span.textContent = todo.text;
+
+    const del = document.createElement('button');
+    del.className = 'delete-btn';
+    del.textContent = '✕';
+    del.setAttribute('aria-label', '删除 ' + todo.text);
+    del.addEventListener('click', () => deleteTodo(todo.id, li));
+
+    li.append(cb, span, del);
+    list.appendChild(li);
+  });
+}
+
+async function addTodo(text) {
+  const res = await fetch('/api/todos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error('Failed');
+  return res.json();
+}
+
+async function toggleTodo(id, done, li) {
+  li.classList.toggle('done', done);
+  try {
+    const res = await fetch('/api/todos/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ done }),
+    });
+    if (!res.ok) throw new Error('Failed');
+  } catch {
+    li.classList.toggle('done', !done);
+    showToast('操作失败，请重试');
+  }
+}
+
+async function deleteTodo(id, li) {
+  li.remove();
+  // Update empty state
+  if (list.children.length === 0) {
+    status.className = 'status';
+    status.textContent = '暂无待办事项';
+  }
+  try {
+    const res = await fetch('/api/todos/' + id, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed');
+  } catch {
+    fetchTodos();
+    showToast('删除失败，请重试');
+  }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    await addTodo(text);
+    input.value = '';
+    await fetchTodos();
+  } catch {
+    showToast('添加失败，请重试');
+  }
+});
+
+fetchTodos();
+</script>
+</body>
+</html>

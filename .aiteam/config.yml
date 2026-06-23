@@ -1,0 +1,3 @@
+projects:
+  # 项目代码存放目录，相对于仓库根目录
+  path: projects

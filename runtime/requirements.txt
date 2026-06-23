@@ -1,0 +1,4 @@
+langgraph>=0.2.0
+# Optional, for the visual graph debugger (LangGraph Studio):
+#   pip install "langgraph-cli[inmem]"
+#   langgraph dev   # run from the runtime/ directory

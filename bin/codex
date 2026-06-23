@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CODEX_APP_BIN="/Applications/Codex.app/Contents/Resources/codex"
+
+if [[ ! -x "$CODEX_APP_BIN" ]]; then
+  echo "Codex app CLI not found at $CODEX_APP_BIN" >&2
+  exit 1
+fi
+
+exec "$CODEX_APP_BIN" "$@"
+
