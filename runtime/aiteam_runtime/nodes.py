@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from . import guardrails as gr
+from . import vcs
 from .engine import PRE_ROLES, RoleEngine, infer_signals, plan_roles, tier_of
 from .guardrails import new_ledger
 from .state import log
@@ -147,13 +148,35 @@ def make_nodes(engine: RoleEngine):
             return {"status": "blocked", "blocker": "fix-loop guard tripped",
                     "fix_iterations": iters, "ledger": ledger,
                     "history": [log("developer", "BLOCKED (fix-loop guard)")]}
+
+        hist: list[str] = []
+        update: dict[str, Any] = {}
+        # On the first iteration, put edits on a dedicated task branch so they
+        # are easy to view and cancel. Fail-soft: a VCS hiccup never blocks dev.
+        if state.get("vcs_enabled") and iters == 1 and not state.get("vcs_branch"):
+            started = vcs.start(state.get("task_id", ""))
+            update["vcs_branch"] = started.get("branch", "")
+            hist.append(log("developer", f"vcs: {started.get('note', '')}"))
+
         r = engine.run("developer", state)
         if (b := _charge_and_check(state, "developer", r)):
             b["fix_iterations"] = iters
-            return b
-        return {"code_summary": r.text, "fix_iterations": iters, "phase": "developer",
-                "ledger": ledger,
-                "history": [log("developer", f"edit-test-fix loop (iter {iters})")]}
+            b.setdefault("history", [])
+            b["history"] = hist + b["history"]
+            return {**update, **b}
+
+        # Commit this iteration's edits as a reviewable snapshot.
+        if state.get("vcs_enabled"):
+            snap = vcs.snapshot(state.get("task_id", ""), f"developer iter {iters}: {state.get('goal', '')}")
+            hist.append(log("developer", f"vcs: {snap.get('note', '')}"))
+
+        hist.append(log("developer", f"edit-test-fix loop (iter {iters})"))
+        # Guidance is consumed once: clear it so it doesn't leak into later nodes.
+        if state.get("human_feedback"):
+            update["human_feedback"] = ""
+        update.update({"code_summary": r.text, "fix_iterations": iters, "phase": "developer",
+                       "ledger": ledger, "history": hist})
+        return update
 
     def qa(state: dict[str, Any]) -> dict[str, Any]:
         if _blocked(state):

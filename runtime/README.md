@@ -1,22 +1,24 @@
-# aiteam LangGraph 运行时(骨架)
+# aiteam LangGraph 运行时
 
 把 `.aiteam/roles/` 里的角色契约变成一个**受控的多 Agent 图**:复杂度路由、覆盖度评估、QA 有界返工、Fix-Loop 护栏,以及作为图状态强制的**预算账本**。
 
-默认使用确定性 **Stub 引擎**,无需任何 API Key 就能跑通和单测;将来把 `engine.RoleEngine` 换成真实的 Codex / Claude Code CLI 适配器即可上线。
+两个引擎:
 
-> 这是骨架:节点目前返回占位产物、不写 `docs/`。真实引擎才会读取角色契约 + 调模型 + 更新 `docs/` 与 `memory/`。
+- **StubEngine**(默认 `--stub`):确定性占位产物,无需 API Key,用于看流程和单测。
+- **ClaudeEngine**(真引擎):加载 `.aiteam/roles/<role>.md` 契约 + 调 `claude` CLI,真实读写 `projects/`、`docs/`、`memory/`;支持**实时流式输出**、**关键节点暂停引导**、**改动落到 task 分支**。Codex 适配器是下一步。
 
 ## 目录
 
 ```
 runtime/
   aiteam_runtime/
-    state.py        # 图状态(可 checkpoint/恢复)
+    state.py        # 图状态(可 checkpoint/恢复)+ vcs/反馈字段
     guardrails.py   # 预算账本 + 确定性护栏(token/cost 强制配置)
-    engine.py       # RoleEngine 接口 + StubEngine + 复杂度分类
-    nodes.py        # 各角色节点 + 条件路由
-    graph.py        # 图编排 + 人工审批中断 + 编译入口
-  run_demo.py       # 本地端到端跑一个任务
+    engine.py       # RoleEngine 接口 + StubEngine + ClaudeEngine(流式)+ 复杂度分类
+    nodes.py        # 各角色节点 + 条件路由 + developer 的 vcs 接入
+    graph.py        # 图编排 + 可配置中断点 + 编译入口
+    vcs.py          # per-task 分支隔离(start/snapshot),供 developer 与脚本共用
+  run_demo.py       # 本地端到端跑一个任务(实时 + 可引导)
   tests/            # 确定性单测(无需 API Key)
   langgraph.json    # LangGraph Studio / CLI 入口
   requirements.txt
@@ -49,16 +51,27 @@ qa --(pass, 含 reviewer)--> reviewer -> END
 python -m venv .venv && source .venv/bin/activate
 pip install -r runtime/requirements.txt
 
-# 端到端 demo(stub 引擎)
+# 端到端 demo(stub 引擎,非交互、不连真 AI)
+python runtime/run_demo.py --stub "Add user auth with sessions"
+python runtime/run_demo.py --stub "Fix a typo in the footer"   # 简单分支
+
+# 真引擎(实时输出 + 关键节点暂停引导 + 改动进 task 分支)
 python runtime/run_demo.py "Add user auth with sessions"
-python runtime/run_demo.py "Fix a typo in the footer"        # 简单分支
 
 # 单测
 pip install pytest
 cd runtime && python -m pytest -q
 ```
 
+## 实时、引导与改动隔离(真引擎)
+
+- **实时输出**:`ClaudeEngine(stream=True)` 用 `--output-format stream-json`,逐步把角色输出打到 stderr;`run_demo` 用 `graph.stream(stream_mode="updates")` 做节点级实时。
+- **人工引导**:`build_graph(interrupt_after=["ba","architect","developer"])` 在这些节点后暂停,`run_demo` 读取你的输入写入 `state.human_feedback`,由 `engine._build_prompt` 作为「HUMAN GUIDANCE」注入下一个角色。
+- **改动隔离/回滚**:`vcs.py` 让 developer 在 `aiteam/<task_id>` 分支上逐次 commit(`vcs_enabled` 开启时)。查看 `scripts/task-changes.sh <id>`,取消 `scripts/task-revert.sh <id>`;手动流程开工前用 `scripts/task-start.sh <id>`。
+
 ## 可视化调试(LangGraph Studio,可选)
+
+仅在想看流程图 / 节点 state 时使用,日常 CLI 用法不依赖它。
 
 ```bash
 pip install "langgraph-cli[inmem]"

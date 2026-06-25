@@ -60,15 +60,19 @@ def build_graph(
     *,
     checkpointer: Any | None = None,
     human_approval: bool = True,
+    interrupt_after: list[str] | None = None,
     recursion_limit: int | None = None,
 ):
     """Compile the workflow.
 
     - `human_approval`: interrupt after ba and architect for human review.
+    - `interrupt_after`: explicit pause points; overrides `human_approval` when
+      provided (e.g. ["ba", "architect", "developer"] to also guide before QA).
     - `recursion_limit` is applied per-invocation via config, not here; pass it
       through `run.invoke(..., config={"recursion_limit": N})`.
     """
-    interrupt_after = ["ba", "architect"] if human_approval else []
+    if interrupt_after is None:
+        interrupt_after = ["ba", "architect"] if human_approval else []
     return build_workflow(engine).compile(
         checkpointer=checkpointer,
         interrupt_after=interrupt_after,

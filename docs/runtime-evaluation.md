@@ -25,6 +25,14 @@ LangGraph itself is MIT-licensed. LangSmith currently offers one free Developer 
 | CrewAI | Simple role/crew model, memory, max iterations/time/retries | Full visual management is commercial; weaker graph-level persistence and debugging fit for this project | Not selected |
 | Shannon | Temporal durability, token budget, ReAct convergence controls, WASI sandbox, HITL, audit-oriented architecture | Audited CI masks some test failures; desktop build disabled; heavy stack; ARM image gap; OpenAI key required for semantic memory | Reference only |
 
+## Implemented Runtime (as of 2026-06-25)
+
+The skeleton evaluated above is now wired in `runtime/`. Beyond the orchestration graph and budget ledger, three operator-facing controls are implemented:
+
+- **Live output** — `ClaudeEngine(stream=True)` uses `claude --output-format stream-json` and echoes each role's text and tool activity to the terminal as it is produced; `run_demo.py` drives the graph with `graph.stream(stream_mode="updates")` for node-level progress. The run is no longer a black box.
+- **Human-in-the-loop guidance** — `build_graph(interrupt_after=[...])` pauses after configurable nodes (default `ba`, `architect`, `developer`). On pause, `run_demo.py` shows the artifact and reads free-text guidance into `state.human_feedback`, which `engine._build_prompt` injects as `HUMAN GUIDANCE` for the next role and the developer node clears after one use.
+- **Change isolation & revert** — `vcs.py` puts every task's developer edits on a dedicated `aiteam/<task_id>` branch and commits each iteration, so changes are easy to view (`scripts/task-changes.sh`) and cancel (`scripts/task-revert.sh`). This is the concrete "human approval before destructive tools" boundary for code edits and honors the "no shared working tree" rule. Active only when `vcs_enabled` (real engine); the stub stays side-effect free.
+
 ## Guardrail Contract
 
 Initial defaults for personal use:

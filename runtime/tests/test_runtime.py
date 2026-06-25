@@ -11,6 +11,7 @@ import time
 import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
+from aiteam_runtime import vcs
 from aiteam_runtime.engine import ClaudeEngine, StubEngine, plan_roles, tier_of
 from aiteam_runtime.graph import build_graph
 from aiteam_runtime.guardrails import BudgetError, new_ledger
@@ -90,6 +91,57 @@ def test_budget_limit_blocks():
     out = _run("add an api endpoint for auth", limits={"max_total_model_calls": 2})
     assert out["status"] == "blocked"
     assert "budget" in out["blocker"]
+
+
+def _git(repo, *args):
+    return subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=True)
+
+
+def test_vcs_start_and_snapshot_isolate_changes(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@e.st")
+    _git(repo, "config", "user.name", "tester")
+    (repo / "seed.txt").write_text("seed\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "seed")
+
+    monkeypatch.setattr(vcs, "_REPO_ROOT", repo)
+
+    started = vcs.start("T1")
+    assert started["branch"] == "aiteam/T1"
+    assert started["base_branch"] in ("main", "master")
+
+    # Branch was actually created and checked out.
+    cur = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                         cwd=repo, capture_output=True, text=True).stdout.strip()
+    assert cur == "aiteam/T1"
+
+    # An edit gets committed on the task branch, not the base.
+    (repo / "feature.txt").write_text("work\n")
+    snap = vcs.snapshot("T1", "iter 1: do the thing")
+    assert "commit" in snap and snap["commit"]
+
+    # base branch has no feature.txt; task branch does -> changes are isolated.
+    _git(repo, "checkout", "-q", started["base_branch"])
+    assert not (repo / "feature.txt").exists()
+
+
+def test_vcs_snapshot_noop_when_clean(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@e.st")
+    _git(repo, "config", "user.name", "tester")
+    (repo / "seed.txt").write_text("seed\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "seed")
+
+    monkeypatch.setattr(vcs, "_REPO_ROOT", repo)
+    vcs.start("T2")
+    snap = vcs.snapshot("T2", "nothing changed")
+    assert "commit" not in snap  # clean tree -> no empty commit
 
 
 def _pid_exists(pid: int) -> bool:

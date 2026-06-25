@@ -12,6 +12,8 @@ import json
 import os
 import signal
 import subprocess
+import sys
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -98,12 +100,18 @@ class ClaudeEngine:
     model: str = ""
     timeout_s: int = 600
     allow_edits: bool = True
+    # When True, use stream-json and echo each role's output live to stderr so
+    # the run is no longer a black box. Set by run_demo for interactive use.
+    stream: bool = False
 
     def run(self, role: str, state: dict[str, Any]) -> RoleResult:
         contract = self._load_contract(role)
         prompt = self._build_prompt(role, contract, state)
 
-        cmd = ["claude", "--print", "--output-format", "json"]
+        cmd = ["claude", "--print", "--output-format",
+               "stream-json" if self.stream else "json"]
+        if self.stream:
+            cmd.append("--verbose")  # stream-json requires --verbose in --print mode
 
         if self.model:
             cmd.extend(["--model", self.model])
@@ -114,6 +122,7 @@ class ClaudeEngine:
             cmd.extend(["--allowedTools", "Read,Bash"])
 
         proc: subprocess.Popen[str] | None = None
+        timed_out = {"hit": False}
         try:
             proc = subprocess.Popen(
                 cmd,
@@ -124,32 +133,41 @@ class ClaudeEngine:
                 cwd=str(_REPO_ROOT),
                 start_new_session=True,
             )
-            output, stderr = proc.communicate(input=prompt, timeout=self.timeout_s)
+
+            if self.stream:
+                # A watchdog enforces the timeout while we read line by line.
+                watchdog = threading.Timer(
+                    self.timeout_s,
+                    lambda: (timed_out.__setitem__("hit", True),
+                             self._terminate_process_group(proc)),
+                )
+                watchdog.start()
+                try:
+                    text, tokens = self._consume_stream(proc, prompt, role)
+                    stderr = proc.stderr.read() if proc.stderr else ""
+                    proc.wait()
+                finally:
+                    watchdog.cancel()
+            else:
+                output, stderr = proc.communicate(input=prompt, timeout=self.timeout_s)
+                text, tokens = self._parse_blocking(output)
         except subprocess.TimeoutExpired:
             if proc is not None:
                 self._terminate_process_group(proc)
-            return RoleResult(
-                text=f"{role}: TIMEOUT after {self.timeout_s}s",
-                signals={"qa_passed": False, "timeout": True},
-            )
+            timed_out["hit"] = True
+            text, tokens, stderr = "", 0, ""
         except BaseException:
             if proc is not None:
                 self._terminate_process_group(proc)
             raise
 
-        output = output.strip() if output else ""
-        stderr = stderr.strip() if stderr else ""
+        if timed_out["hit"]:
+            return RoleResult(
+                text=f"{role}: TIMEOUT after {self.timeout_s}s",
+                signals={"qa_passed": False, "timeout": True},
+            )
 
-        text = output
-        tokens = 0
-        if output:
-            try:
-                parsed = json.loads(output)
-                text = parsed.get("result", output)
-                usage = parsed.get("usage", {})
-                tokens = usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
-            except json.JSONDecodeError:
-                pass
+        stderr = (stderr or "").strip()
 
         if tokens == 0 and text:
             tokens = len(text) // 4
@@ -164,6 +182,69 @@ class ClaudeEngine:
             text = f"{role}: CLI error (rc={proc.returncode})\nstderr: {stderr}\noutput: {text}"
 
         return RoleResult(text=text, tokens=tokens, cost_usd=cost, signals=signals)
+
+    @staticmethod
+    def _parse_blocking(output: str | None) -> tuple[str, int]:
+        """Parse a single-shot `--output-format json` payload."""
+        output = (output or "").strip()
+        text, tokens = output, 0
+        if output:
+            try:
+                parsed = json.loads(output)
+                text = parsed.get("result", output)
+                usage = parsed.get("usage", {})
+                tokens = usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+            except json.JSONDecodeError:
+                pass
+        return text, tokens
+
+    def _consume_stream(self, proc: subprocess.Popen[str], prompt: str, role: str) -> tuple[str, int]:
+        """Feed the prompt, echo assistant output live, return (result, tokens).
+
+        stream-json emits one JSON object per line. We print assistant text and
+        tool activity to stderr as it arrives, and capture the final result line.
+        """
+        if proc.stdin is not None:
+            try:
+                proc.stdin.write(prompt)
+                proc.stdin.close()
+            except BrokenPipeError:
+                pass
+
+        result_text, tokens = "", 0
+        sys.stderr.write(f"\n  ┌─ {role} (live) ─\n")
+        sys.stderr.flush()
+
+        if proc.stdout is not None:
+            for line in proc.stdout:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    evt = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                etype = evt.get("type")
+                if etype == "assistant":
+                    for block in evt.get("message", {}).get("content", []):
+                        btype = block.get("type")
+                        if btype == "text" and block.get("text"):
+                            sys.stderr.write(self._indent(block["text"]))
+                        elif btype == "tool_use":
+                            sys.stderr.write(f"\n  · [tool] {block.get('name', '?')}\n")
+                    sys.stderr.flush()
+                elif etype == "result":
+                    result_text = evt.get("result", result_text)
+                    usage = evt.get("usage", {})
+                    tokens = usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+
+        sys.stderr.write("\n  └────────────────\n")
+        sys.stderr.flush()
+        return result_text, tokens
+
+    @staticmethod
+    def _indent(text: str) -> str:
+        return "".join(f"  │ {ln}\n" for ln in text.splitlines())
 
     def _terminate_process_group(self, proc: subprocess.Popen[str]) -> None:
         """Stop the Claude CLI and any child tools it spawned."""
@@ -227,6 +308,13 @@ class ClaudeEngine:
                 parts.append(f"=== {label} ===")
                 parts.append(val[:4000])
                 parts.append("")
+
+        # Human guidance injected at an interrupt point takes priority.
+        feedback = state.get("human_feedback", "")
+        if feedback:
+            parts.append("=== HUMAN GUIDANCE (must follow) ===")
+            parts.append(feedback[:4000])
+            parts.append("")
 
         parts.append("=== INSTRUCTIONS ===")
         if role == "ba":

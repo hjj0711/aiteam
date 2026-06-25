@@ -44,6 +44,13 @@ class AiTeamState(TypedDict, total=False):
     # --- budget ledger (limits + spent) ---
     ledger: dict[str, Any]
 
+    # --- per-task git isolation (see vcs.py); only active when vcs_enabled ---
+    vcs_enabled: bool
+    vcs_branch: str
+
+    # --- human-in-the-loop guidance injected at an interrupt point ---
+    human_feedback: str
+
     # --- audit log ---
     history: Annotated[list[str], operator.add]
 
@@ -53,6 +60,7 @@ def initial_state(
     goal: str,
     ledger: dict[str, Any],
     roles_override: list[str] | None = None,
+    vcs_enabled: bool = False,
 ) -> AiTeamState:
     return {
         "task_id": task_id,
@@ -74,6 +82,9 @@ def initial_state(
         "fix_iterations": 0,
         "qa_passed": False,
         "ledger": ledger,
+        "vcs_enabled": vcs_enabled,
+        "vcs_branch": "",
+        "human_feedback": "",
         "history": [f"[{_ts()}] intake: {goal}"],
     }
 
