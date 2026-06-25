@@ -11,6 +11,7 @@ from typing import Any
 
 from . import guardrails as gr
 from .engine import PRE_ROLES, RoleEngine, infer_signals, plan_roles, tier_of
+from .guardrails import new_ledger
 from .state import log
 
 
@@ -37,6 +38,47 @@ def _charge_and_check(state: dict[str, Any], role: str, result) -> dict[str, Any
             "history": [log(role, f"BLOCKED ({reason})")],
         }
     return None
+
+
+def intake(state: dict[str, Any]) -> dict[str, Any]:
+    """Auto-initialize state from just task_id + goal.
+
+    In Studio, the user only needs to provide:
+        {"task_id": "T1", "goal": "Add guest login API"}
+    This node fills in the rest (ledger, defaults, history).
+    """
+    goal = state.get("goal", "")
+    task_id = state.get("task_id", "TASK-1")
+
+    # If ledger is already set, this is a resume — don't reinitialize.
+    if state.get("ledger"):
+        return {}
+
+    ledger = new_ledger({"max_total_tokens": 200_000, "max_total_cost_usd": 5.0})
+    roles_override = state.get("roles_override") or None
+
+    return {
+        "task_id": task_id,
+        "goal": goal,
+        "tier": "",
+        "phase": "intake",
+        "status": "running",
+        "blocker": "",
+        "roles_override": roles_override or [],
+        "active_roles": [],
+        "requirements": "",
+        "design": "",
+        "architecture": "",
+        "code_summary": "",
+        "test_results": "",
+        "review": "",
+        "coverage_passes": 0,
+        "qa_cycles": 0,
+        "fix_iterations": 0,
+        "qa_passed": False,
+        "ledger": ledger,
+        "history": [log("intake", goal)],
+    }
 
 
 def make_nodes(engine: RoleEngine):

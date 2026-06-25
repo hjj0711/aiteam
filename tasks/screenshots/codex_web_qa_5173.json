@@ -1,0 +1,105 @@
+{
+  "base": "http://localhost:5173",
+  "checks": [
+    {
+      "name": "mobile login: Ionic buttons hydrated",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "mobile login: Ionic inputs hydrated",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "mobile login: visible title color",
+      "ok": true,
+      "detail": "rgb(0, 0, 0)"
+    },
+    {
+      "name": "mobile login: document no horizontal overflow",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "mobile login: body no horizontal overflow",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "mobile login: elements stay inside viewport",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "mobile login: body overflow-x hidden",
+      "ok": true,
+      "detail": "hidden"
+    },
+    {
+      "name": "guest login request returned success",
+      "ok": true,
+      "detail": "[{\"url\": \"https://malou.site/api/auth/guest\", \"status\": 201}]"
+    },
+    {
+      "name": "guest login navigates to rooms",
+      "ok": true,
+      "detail": "http://localhost:5173/rooms"
+    },
+    {
+      "name": "browser console has no errors",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "mobile rooms: document no horizontal overflow",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/rooms\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": false, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(0, 84, 233)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 2, \"ionInputCount\": 0}"
+    },
+    {
+      "name": "mobile rooms: body no horizontal overflow",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/rooms\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": false, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(0, 84, 233)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 2, \"ionInputCount\": 0}"
+    },
+    {
+      "name": "mobile rooms: elements stay inside viewport",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/rooms\", \"innerWidth\": 390, \"htmlScrollWidth\": 390, \"bodyScrollWidth\": 390, \"maxElementRight\": 390, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": false, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(0, 84, 233)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 2, \"ionInputCount\": 0}"
+    },
+    {
+      "name": "mobile rooms: body overflow-x hidden",
+      "ok": true,
+      "detail": "hidden"
+    },
+    {
+      "name": "desktop login: Ionic buttons hydrated",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 1280, \"htmlScrollWidth\": 1280, \"bodyScrollWidth\": 1280, \"maxElementRight\": 1280, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "desktop login: visible title color",
+      "ok": true,
+      "detail": "rgb(0, 0, 0)"
+    },
+    {
+      "name": "desktop login: document no horizontal overflow",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 1280, \"htmlScrollWidth\": 1280, \"bodyScrollWidth\": 1280, \"maxElementRight\": 1280, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "desktop login: body no horizontal overflow",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 1280, \"htmlScrollWidth\": 1280, \"bodyScrollWidth\": 1280, \"maxElementRight\": 1280, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "desktop login: elements stay inside viewport",
+      "ok": true,
+      "detail": "{\"url\": \"http://localhost:5173/login\", \"innerWidth\": 1280, \"htmlScrollWidth\": 1280, \"bodyScrollWidth\": 1280, \"maxElementRight\": 1280, \"bodyOverflowX\": \"hidden\", \"rootOverflowX\": \"hidden\", \"ionAppOverflowX\": \"hidden\", \"buttonShadow\": true, \"inputHydrated\": true, \"bodyColor\": \"rgb(0, 0, 0)\", \"contentBg\": \"#fff\", \"titleColor\": \"rgb(0, 0, 0)\", \"buttonColor\": \"rgb(255, 255, 255)\", \"buttonDisplay\": \"block\", \"ionButtonCount\": 3, \"ionInputCount\": 2}"
+    },
+    {
+      "name": "desktop login: body overflow-x hidden",
+      "ok": true,
+      "detail": "hidden"
+    }
+  ]
+}

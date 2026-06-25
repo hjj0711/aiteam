@@ -21,20 +21,22 @@ from typing import Any
 
 from langgraph.graph import END, START, StateGraph
 
-from .engine import RoleEngine, StubEngine
-from .nodes import make_nodes, route_after_orchestrator, route_after_qa
+from .engine import ClaudeEngine, RoleEngine, StubEngine
+from .nodes import intake, make_nodes, route_after_orchestrator, route_after_qa
 from .state import AiTeamState
 
 
 def build_workflow(engine: RoleEngine | None = None) -> StateGraph:
-    engine = engine or StubEngine()
+    engine = engine or ClaudeEngine()
     nodes = make_nodes(engine)
 
     g = StateGraph(AiTeamState)
+    g.add_node("intake", intake)
     for name, fn in nodes.items():
         g.add_node(name, fn)
 
-    g.add_edge(START, "orchestrator")
+    g.add_edge(START, "intake")
+    g.add_edge("intake", "orchestrator")
     g.add_conditional_edges(
         "orchestrator",
         route_after_orchestrator,

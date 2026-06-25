@@ -1,0 +1,205 @@
+{
+  "timestamp": "2026-06-24T02:04:42.131753",
+  "target": "http://localhost:5173",
+  "results": [
+    {
+      "id": 1,
+      "check": "mobile: html scrollWidth<=innerWidth",
+      "status": "PASS",
+      "detail": "scrollWidth=390 innerWidth=390"
+    },
+    {
+      "id": 2,
+      "check": "mobile: body scrollWidth<=innerWidth",
+      "status": "PASS",
+      "detail": "scrollWidth=390 innerWidth=390"
+    },
+    {
+      "id": 3,
+      "check": "mobile: no h-scrollbar",
+      "status": "PASS",
+      "detail": "h_scrollbar=False"
+    },
+    {
+      "id": 4,
+      "check": "mobile: ion-title visible",
+      "status": "PASS",
+      "detail": "text='Newworld Chat'"
+    },
+    {
+      "id": 5,
+      "check": "mobile: form labels visible",
+      "status": "PASS",
+      "detail": "邮箱=Y 游客=Y"
+    },
+    {
+      "id": 6,
+      "check": "mobile: IonInput text visible",
+      "status": "PASS",
+      "detail": "color=rgb(255, 255, 255)"
+    },
+    {
+      "id": 7,
+      "check": "mobile: guest button found",
+      "status": "PASS",
+      "detail": "count=1"
+    },
+    {
+      "id": 8,
+      "check": "mobile: guest button visible+enabled",
+      "status": "PASS",
+      "detail": "visible=True enabled=True"
+    },
+    {
+      "id": 9,
+      "check": "mobile: POST /auth/guest sent",
+      "status": "PASS",
+      "detail": "url=https://malou.site/api/auth/guest"
+    },
+    {
+      "id": 10,
+      "check": "mobile: /auth/guest response",
+      "status": "PASS",
+      "detail": "status=201"
+    },
+    {
+      "id": 11,
+      "check": "mobile: navigated to /rooms",
+      "status": "PASS",
+      "detail": "url=http://localhost:5173/rooms"
+    },
+    {
+      "id": 12,
+      "check": "mobile: rooms html overflow ok",
+      "status": "PASS",
+      "detail": "sw=390 iw=390"
+    },
+    {
+      "id": 13,
+      "check": "mobile: rooms body overflow ok",
+      "status": "PASS",
+      "detail": "sw=390 iw=390"
+    },
+    {
+      "id": 14,
+      "check": "mobile: rooms has content",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 1,
+      "check": "desktop: html scrollWidth<=innerWidth",
+      "status": "PASS",
+      "detail": "scrollWidth=1280 innerWidth=1280"
+    },
+    {
+      "id": 2,
+      "check": "desktop: body scrollWidth<=innerWidth",
+      "status": "PASS",
+      "detail": "scrollWidth=1280 innerWidth=1280"
+    },
+    {
+      "id": 3,
+      "check": "desktop: no h-scrollbar",
+      "status": "PASS",
+      "detail": "h_scrollbar=False"
+    },
+    {
+      "id": 4,
+      "check": "desktop: ion-title visible",
+      "status": "PASS",
+      "detail": "text='Newworld Chat'"
+    },
+    {
+      "id": 5,
+      "check": "desktop: form labels visible",
+      "status": "PASS",
+      "detail": "邮箱=Y 游客=Y"
+    },
+    {
+      "id": 6,
+      "check": "desktop: IonInput text visible",
+      "status": "PASS",
+      "detail": "color=rgb(255, 255, 255)"
+    },
+    {
+      "id": 7,
+      "check": "desktop: guest button found",
+      "status": "PASS",
+      "detail": "count=1"
+    },
+    {
+      "id": 8,
+      "check": "desktop: guest button visible+enabled",
+      "status": "PASS",
+      "detail": "visible=True enabled=True"
+    },
+    {
+      "id": 9,
+      "check": "desktop: POST /auth/guest sent",
+      "status": "PASS",
+      "detail": "url=https://malou.site/api/auth/guest"
+    },
+    {
+      "id": 10,
+      "check": "desktop: /auth/guest response",
+      "status": "PASS",
+      "detail": "status=201"
+    },
+    {
+      "id": 11,
+      "check": "desktop: navigated to /rooms",
+      "status": "PASS",
+      "detail": "url=http://localhost:5173/rooms"
+    },
+    {
+      "id": 12,
+      "check": "desktop: rooms html overflow ok",
+      "status": "PASS",
+      "detail": "sw=1280 iw=1280"
+    },
+    {
+      "id": 13,
+      "check": "desktop: rooms body overflow ok",
+      "status": "PASS",
+      "detail": "sw=1280 iw=1280"
+    },
+    {
+      "id": 14,
+      "check": "desktop: rooms has content",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "chat_app_qa3_mobile_01_login.png",
+      "path": "/Users/kit/Documents/myself/aiteam/tasks/screenshots/chat_app_qa3_mobile_01_login.png"
+    },
+    {
+      "name": "chat_app_qa3_mobile_02_after_click.png",
+      "path": "/Users/kit/Documents/myself/aiteam/tasks/screenshots/chat_app_qa3_mobile_02_after_click.png"
+    },
+    {
+      "name": "chat_app_qa3_mobile_03_rooms.png",
+      "path": "/Users/kit/Documents/myself/aiteam/tasks/screenshots/chat_app_qa3_mobile_03_rooms.png"
+    },
+    {
+      "name": "chat_app_qa3_desktop_01_login.png",
+      "path": "/Users/kit/Documents/myself/aiteam/tasks/screenshots/chat_app_qa3_desktop_01_login.png"
+    },
+    {
+      "name": "chat_app_qa3_desktop_02_after_click.png",
+      "path": "/Users/kit/Documents/myself/aiteam/tasks/screenshots/chat_app_qa3_desktop_02_after_click.png"
+    },
+    {
+      "name": "chat_app_qa3_desktop_03_rooms.png",
+      "path": "/Users/kit/Documents/myself/aiteam/tasks/screenshots/chat_app_qa3_desktop_03_rooms.png"
+    }
+  ],
+  "summary": {
+    "pass": 28,
+    "fail": 0,
+    "total": 28
+  }
+}

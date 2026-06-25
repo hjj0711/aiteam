@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import os
+import signal
+import stat
+import subprocess
+import time
+
 import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
-from aiteam_runtime.engine import StubEngine, plan_roles, tier_of
+from aiteam_runtime.engine import ClaudeEngine, StubEngine, plan_roles, tier_of
 from aiteam_runtime.graph import build_graph
 from aiteam_runtime.guardrails import BudgetError, new_ledger
 from aiteam_runtime.state import initial_state
@@ -84,3 +90,51 @@ def test_budget_limit_blocks():
     out = _run("add an api endpoint for auth", limits={"max_total_model_calls": 2})
     assert out["status"] == "blocked"
     assert "budget" in out["blocker"]
+
+
+def _pid_exists(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def test_claude_engine_terminates_process_group(tmp_path):
+    child_pid_path = tmp_path / "child.pid"
+    script = tmp_path / "spawn_child.sh"
+    script.write_text(
+        "#!/bin/sh\n"
+        "sleep 60 &\n"
+        "echo $! > \"$CLAUDE_FAKE_CHILD_PID\"\n"
+        "wait $!\n"
+    )
+    script.chmod(script.stat().st_mode | stat.S_IXUSR)
+
+    child_pid: int | None = None
+    proc: subprocess.Popen[str] | None = None
+    try:
+        env = {**os.environ, "CLAUDE_FAKE_CHILD_PID": str(child_pid_path)}
+        proc = subprocess.Popen([str(script)], env=env, start_new_session=True)
+
+        deadline = time.time() + 5
+        while time.time() < deadline and not child_pid_path.exists():
+            time.sleep(0.05)
+
+        assert child_pid_path.exists()
+        child_pid = int(child_pid_path.read_text())
+        assert _pid_exists(child_pid)
+
+        ClaudeEngine()._terminate_process_group(proc)
+        deadline = time.time() + 5
+        while time.time() < deadline and _pid_exists(child_pid):
+            time.sleep(0.05)
+
+        assert not _pid_exists(child_pid)
+    finally:
+        if child_pid is not None and _pid_exists(child_pid):
+            os.kill(child_pid, signal.SIGKILL)
+        if proc is not None and proc.poll() is None:
+            proc.kill()
